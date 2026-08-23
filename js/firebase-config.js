@@ -7,6 +7,7 @@ import {
 const firebaseConfig = {
   apiKey: "AIzaSyDfKwZVp7_berT1hhOcVnlkgsN1ceifyD4",
   authDomain: "praleesha-ab618.firebaseapp.com",
+  databaseURL: "https://praleesha-ab618-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "praleesha-ab618",
   storageBucket: "praleesha-ab618.firebasestorage.app",
   messagingSenderId: "72038159089",
