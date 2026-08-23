@@ -1,0 +1,13 @@
+{
+  "name": "Tuition Register",
+  "short_name": "Tuition Register",
+  "description": "QR-based attendance and monthly payment tracker for tuition classes",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#161D27",
+  "theme_color": "#161D27",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

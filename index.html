@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Tuition Register</title>
+<meta name="theme-color" content="#161D27">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">Tuition <span>Register</span></span>
+    </div>
+    <div class="page-label" id="pageLabel">Register</div>
+  </header>
+
+  <main>
+
+    <!-- ============ 1. REGISTRATION ============ -->
+    <section class="tab-panel active" id="tab-register">
+      <div class="section-head">
+        <span class="eyebrow">Enrolment</span>
+        <h1>Register a student</h1>
+        <p>Generate a fresh QR badge, or scan an unregistered one, to open the enrolment form.</p>
+      </div>
+
+      <div class="btn-row" style="margin-bottom:14px;">
+        <button class="btn btn-primary" id="btnGenerateQr">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/></svg>
+          New QR
+        </button>
+        <button class="btn btn-outline" id="btnScanRegister">
+          <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+          Scan card
+        </button>
+      </div>
+
+      <div class="card scan-box hidden" id="registerScanBox">
+        <div id="reader-register"></div>
+      </div>
+
+      <div class="card qr-preview hidden" id="registerQrPreview"></div>
+
+      <form class="card hidden" id="registerForm">
+        <div class="eyebrow" id="regFormMode">New student</div>
+        <div class="field">
+          <label for="regName">Student name</label>
+          <input type="text" id="regName" placeholder="e.g. Sithija Perera" required>
+        </div>
+        <div class="field">
+          <label for="regGrade">Grade</label>
+          <select id="regGrade" required>
+            <option value="" disabled selected>Select grade</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="regPhone">Phone number</label>
+          <input type="tel" id="regPhone" placeholder="07X XXX XXXX" required>
+        </div>
+        <div class="field">
+          <label for="regClassDay">Class date (weekday)</label>
+          <select id="regClassDay" required>
+            <option value="" disabled selected>Select day</option>
+            <option>Sunday</option><option>Monday</option><option>Tuesday</option>
+            <option>Wednesday</option><option>Thursday</option><option>Friday</option>
+            <option>Saturday</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="regFee">Monthly fee (LKR)</label>
+          <input type="number" id="regFee" placeholder="e.g. 2500" min="0" step="50" required>
+        </div>
+        <input type="hidden" id="regStudentId">
+        <div class="btn-row">
+          <button type="button" class="btn btn-outline" id="regCancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="regSubmit">Save student</button>
+        </div>
+        <button type="button" class="btn btn-danger hidden" id="regDelete" style="margin-top:10px;">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Remove student
+        </button>
+      </form>
+
+      <div id="registerEmpty" class="empty-state">
+        <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+        <p>Tap <b>New QR</b> to enrol a student and print their badge, or <b>Scan card</b> to register a pre-printed one.</p>
+      </div>
+    </section>
+
+    <!-- ============ 2. STUDENT MASTER ============ -->
+    <section class="tab-panel" id="tab-students">
+      <div class="section-head">
+        <span class="eyebrow">Directory</span>
+        <h1>Student master</h1>
+        <p>Browse, search and filter every enrolled student.</p>
+      </div>
+
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="studentSearch" placeholder="Search by name or phone">
+      </div>
+
+      <div class="chip-row" id="gradeFilterChips"></div>
+
+      <div class="card" style="padding:6px 14px;">
+        <div id="studentList"></div>
+        <div id="studentListEmpty" class="empty-state hidden">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <p>No students match this search.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3. ATTENDANCE ============ -->
+    <section class="tab-panel" id="tab-attendance">
+      <div class="section-head">
+        <span class="eyebrow">Weekly roll call</span>
+        <h1>Mark attendance</h1>
+        <p>Scan a student's QR badge to mark today's class and see their last 4 weeks.</p>
+      </div>
+
+      <button class="btn btn-primary" id="btnScanAttendance" style="margin-bottom:14px;">
+        <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+        Scan to mark attendance
+      </button>
+
+      <div class="card scan-box hidden" id="attendanceScanBox">
+        <div id="reader-attendance"></div>
+      </div>
+
+      <div id="attendanceResult"></div>
+
+      <div id="attendanceEmpty" class="empty-state">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <p>Scan a badge to see the student's weekly attendance record.</p>
+      </div>
+    </section>
+
+    <!-- ============ 4. PAYMENT ============ -->
+    <section class="tab-panel" id="tab-payment">
+      <div class="section-head">
+        <span class="eyebrow">Monthly fees</span>
+        <h1>Record payment</h1>
+        <p>Scan a badge to see outstanding months, starting from Aug 2026.</p>
+      </div>
+
+      <button class="btn btn-primary" id="btnScanPayment" style="margin-bottom:14px;">
+        <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+        Scan to record payment
+      </button>
+
+      <div class="card scan-box hidden" id="paymentScanBox">
+        <div id="reader-payment"></div>
+      </div>
+
+      <div id="paymentResult"></div>
+
+      <div id="paymentEmpty" class="empty-state">
+        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <p>Scan a badge to view and record their pending monthly payments.</p>
+      </div>
+    </section>
+
+    <!-- ============ 5. REPORTS ============ -->
+    <section class="tab-panel" id="tab-reports">
+      <div class="section-head">
+        <span class="eyebrow">Ledger</span>
+        <h1>Payment history</h1>
+        <p>Collections at a glance — weekly, monthly and grade-wise.</p>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-box amber">
+          <div class="stat-val" id="statThisMonth">LKR 0</div>
+          <div class="stat-label">This month</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statThisWeek">LKR 0</div>
+          <div class="stat-label">This week</div>
+        </div>
+      </div>
+
+      <div class="card chart-card">
+        <div class="eyebrow">Weekly collections</div>
+        <canvas id="chartWeekly"></canvas>
+      </div>
+
+      <div class="card chart-card">
+        <div class="eyebrow">Monthly collections</div>
+        <canvas id="chartMonthly"></canvas>
+      </div>
+
+      <div class="card chart-card">
+        <div class="eyebrow">Grade-wise collections (this month)</div>
+        <canvas id="chartGrade"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="eyebrow">Student history</div>
+        <div class="search-wrap" style="margin-top:8px;">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="historySearch" placeholder="Search a student to view their history">
+        </div>
+        <div id="historyResults"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-tab="register">
+      <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+      Register
+      <span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" data-tab="students">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Students
+      <span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" data-tab="attendance">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+      Attend
+      <span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" data-tab="payment">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Payment
+      <span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" data-tab="reports">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reports
+      <span class="nav-dot"></span>
+    </button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- Third-party libraries (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<!-- App modules -->
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+rules_version = '2';
+
+// ----------------------------------------------------------------------------
+// Starting point: open read/write so the app works immediately while you are
+// the only user. Because the Firebase config in js/firebase-config.js is
+// public once deployed to GitHub Pages, tighten this before sharing the URL
+// widely — see the two options below.
+// ----------------------------------------------------------------------------
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /students/{studentId} {
+      allow read, write: if true;
+    }
+    match /attendance/{docId} {
+      allow read, write: if true;
+    }
+    match /payments/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// OPTION A — simple shared passcode (no login screen needed):
+// Add Firebase Anonymous Auth, then sign in automatically and check a custom
+// claim, OR simplest of all: keep the site's URL unlisted/private since
+// GitHub Pages URLs aren't indexed unless linked publicly.
+//
+// OPTION B — real login (recommended once more than one person uses this):
+// 1. Enable Firebase Authentication > Email/Password (or Google Sign-In).
+// 2. Create accounts for W. Gunasekera and any other staff who need access.
+// 3. Replace every "allow read, write: if true;" above with:
+//      allow read, write: if request.auth != null;
+// 4. Add a small sign-in screen to index.html using firebase-auth.js
+//    (getAuth, signInWithEmailAndPassword) before the rest of the app loads.
+// ----------------------------------------------------------------------------
