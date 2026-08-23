@@ -243,10 +243,11 @@
   <div class="toast" id="toast"></div>
 </div>
 
-<!-- Third-party libraries (CDN) -->
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<!-- Third-party libraries (self-hosted — no CDN dependency, works even on
+     networks/extensions that block cdn.jsdelivr.net) -->
+<script src="assets/vendor/html5-qrcode.min.js"></script>
+<script src="assets/vendor/qrcode.min.js"></script>
+<script src="assets/vendor/chart.umd.js"></script>
 
 <!-- App modules -->
 <script type="module" src="js/app.js"></script>
