@@ -399,12 +399,13 @@ main {
 
 .stu-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 6px;
   padding: 12px 4px;
   border-bottom: 1px solid var(--paper-line);
 }
 .stu-row:last-child { border-bottom: none; }
+.stu-row-main { display: flex; align-items: center; gap: 12px; }
 .stu-avatar {
   width: 40px; height: 40px; border-radius: 10px;
   background: var(--ink); color: var(--amber);
@@ -420,6 +421,22 @@ main {
   background: var(--paper-dim); border: 1px solid var(--paper-line);
   padding: 3px 9px; border-radius: 100px; white-space: nowrap;
 }
+.stu-row-extra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 52px;
+}
+.mini-paid { font-size: 11.5px; color: var(--text-muted); font-weight: 600; }
+.mini-stamps { display: flex; gap: 4px; }
+.mini-stamp {
+  width: 14px; height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.mini-stamp.present { background: var(--present); }
+.mini-stamp.absent { background: var(--absent); }
+.mini-stamp.pending { background: var(--pending-bg); border: 1.5px solid var(--pending); }
 
 .chip-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; -ms-overflow-style: none; scrollbar-width: none; }
 .chip-row::-webkit-scrollbar { display: none; }

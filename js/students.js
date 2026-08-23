@@ -1,10 +1,29 @@
-import { el, qsa, initials, GRADES } from "./utils.js";
-import { listenStudents } from "./data.js";
+import { el, qsa, initials, GRADES, recentClassDates, dateKey, monthLabel } from "./utils.js";
+import { listenStudents, getPresentDates, getPaidMonths } from "./data.js";
 import { editStudentById } from "./register.js";
 import { switchTab } from "./app.js";
 
 let allStudents = [];
 let activeGrade = "All";
+const extraCache = new Map(); // studentId -> { tiles: [{status}], lastPaidMonth }
+const inFlight = new Set();
+
+async function fetchExtra(student) {
+  if (inFlight.has(student.id)) return;
+  inFlight.add(student.id);
+  const dates = student.classDay ? recentClassDates(student.classDay, 4) : [];
+  const todayKey = dateKey(new Date());
+  const [presentSet, paidMap] = await Promise.all([
+    dates.length ? getPresentDates(student.id, dates.map(d => d.key)) : Promise.resolve(new Set()),
+    getPaidMonths(student.id)
+  ]);
+  const tiles = dates.map(d => ({
+    status: presentSet.has(d.key) ? "present" : (d.key === todayKey ? "pending" : "absent")
+  }));
+  const lastPaidMonth = paidMap.size ? [...paidMap.keys()].sort().slice(-1)[0] : null;
+  extraCache.set(student.id, { tiles, lastPaidMonth });
+  inFlight.delete(student.id);
+}
 
 function buildChips() {
   const row = el("gradeFilterChips");
@@ -48,13 +67,31 @@ function render() {
     const row = document.createElement("div");
     row.className = "stu-row";
     row.style.cursor = "pointer";
+
+    const extra = extraCache.get(s.id);
+    if (!extra) {
+      fetchExtra(s).then(() => render());
+    }
+
+    const tilesHtml = (extra?.tiles?.length ? extra.tiles : [null, null, null, null])
+      .map(t => `<span class="mini-stamp ${t ? t.status : "pending"}"></span>`).join("");
+    const paidText = extra
+      ? (extra.lastPaidMonth ? `Paid through ${monthLabel(extra.lastPaidMonth)}` : "No payments yet")
+      : "Loading…";
+
     row.innerHTML = `
-      <div class="stu-avatar">${initials(s.name)}</div>
-      <div class="stu-info">
-        <div class="stu-name">${escapeHtml(s.name || "Unnamed")}</div>
-        <div class="stu-sub">${escapeHtml(s.classDay || "—")} · ${escapeHtml(s.phone || "—")}</div>
+      <div class="stu-row-main">
+        <div class="stu-avatar">${initials(s.name)}</div>
+        <div class="stu-info">
+          <div class="stu-name">${escapeHtml(s.name || "Unnamed")}</div>
+          <div class="stu-sub">${escapeHtml(s.classDay || "—")} · ${escapeHtml(s.phone || "—")}</div>
+        </div>
+        <div class="grade-pill">${escapeHtml(s.grade || "—")}</div>
       </div>
-      <div class="grade-pill">${escapeHtml(s.grade || "—")}</div>
+      <div class="stu-row-extra">
+        <span class="mini-paid">${paidText}</span>
+        <div class="mini-stamps">${tilesHtml}</div>
+      </div>
     `;
     row.addEventListener("click", async () => {
       switchTab("register");
@@ -70,6 +107,6 @@ function escapeHtml(str) {
 
 export function initStudents() {
   buildChips();
-  listenStudents(list => { allStudents = list; render(); });
+  listenStudents(list => { allStudents = list; extraCache.clear(); render(); });
   el("studentSearch").addEventListener("input", render);
 }
