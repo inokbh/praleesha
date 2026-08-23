@@ -11,18 +11,24 @@ const inFlight = new Set();
 async function fetchExtra(student) {
   if (inFlight.has(student.id)) return;
   inFlight.add(student.id);
-  const dates = student.classDay ? recentClassDates(student.classDay, 4) : [];
-  const todayKey = dateKey(new Date());
-  const [presentSet, paidMap] = await Promise.all([
-    dates.length ? getPresentDates(student.id, dates.map(d => d.key)) : Promise.resolve(new Set()),
-    getPaidMonths(student.id)
-  ]);
-  const tiles = dates.map(d => ({
-    status: presentSet.has(d.key) ? "present" : (d.key === todayKey ? "pending" : "absent")
-  }));
-  const lastPaidMonth = paidMap.size ? [...paidMap.keys()].sort().slice(-1)[0] : null;
-  extraCache.set(student.id, { tiles, lastPaidMonth });
-  inFlight.delete(student.id);
+  try {
+    const dates = student.classDay ? recentClassDates(student.classDay, 4) : [];
+    const todayKey = dateKey(new Date());
+    const [presentSet, paidMap] = await Promise.all([
+      dates.length ? getPresentDates(student.id, dates.map(d => d.key)) : Promise.resolve(new Set()),
+      getPaidMonths(student.id)
+    ]);
+    const tiles = dates.map(d => ({
+      status: presentSet.has(d.key) ? "present" : (d.key === todayKey ? "pending" : "absent")
+    }));
+    const lastPaidMonth = paidMap.size ? [...paidMap.keys()].sort().slice(-1)[0] : null;
+    extraCache.set(student.id, { tiles, lastPaidMonth });
+  } catch (err) {
+    console.error("Couldn't load attendance/payment summary for", student.id, err);
+    extraCache.set(student.id, { tiles: [], lastPaidMonth: null, error: true });
+  } finally {
+    inFlight.delete(student.id);
+  }
 }
 
 function buildChips() {
@@ -76,7 +82,7 @@ function render() {
     const tilesHtml = (extra?.tiles?.length ? extra.tiles : [null, null, null, null])
       .map(t => `<span class="mini-stamp ${t ? t.status : "pending"}"></span>`).join("");
     const paidText = extra
-      ? (extra.lastPaidMonth ? `Paid through ${monthLabel(extra.lastPaidMonth)}` : "No payments yet")
+      ? (extra.error ? "Couldn't load" : (extra.lastPaidMonth ? `Paid through ${monthLabel(extra.lastPaidMonth)}` : "No payments yet"))
       : "Loading…";
 
     row.innerHTML = `
