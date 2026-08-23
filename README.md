@@ -4,7 +4,10 @@ A mobile-first, QR-based attendance and monthly payment tracker for tuition
 classes — five tabs (Register, Student master, Attendance, Payment, Reports),
 backed by Firebase Firestore, deployable as a free static site on GitHub Pages.
 
-No build step, no framework, no server — plain HTML/CSS/JS.
+No build step, no framework, no server — plain HTML/CSS/JS. The three
+third-party libraries (QR generation, QR scanning, charts) are bundled inside
+`assets/vendor/` rather than loaded from a CDN, so the app keeps working even
+on networks or browser extensions that block `cdn.jsdelivr.net`.
 
 ---
 
